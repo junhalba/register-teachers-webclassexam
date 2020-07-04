@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>ClassExam-Ingreso</title>
+    <link rel="stylesheet" type="text/css" href="css/alertify.min.css">
+		<link rel="stylesheet" type="text/css" href="css/alertify.rtl.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Lato&display=swap" rel="stylesheet">
+    <!-- Estilos CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="img/user.png" type="image/x-icon">
+    <!-- Javascript SDKs-->
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script> 
+    <script src="js/amazon-cognito-auth.min.js"></script>
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.7.16.min.js"></script> 
+    <script src="js/amazon-cognito-identity.min.js"></script>   
+    <script src="js/config.js"></script>
+    <script src="js/alertify.js"></script>
+  </head>
+  <body>
+    <main>
+      <article>
+          <section>
+              <form action="/" method="POST">                  
+                  <img height="150px" width="150px" src="img/user.png" alt=""/>
+                  <img height="80px" width="250px" src="img/logo2.png" alt=""/> 
+                  <input type="email" name="email" id="inputUsername" placeholder="Correo electr&oacute;nico" required autofocus><br/>
+                  <input type="password" name="password" id="inputPassword" placeholder="Contrase&ntilde;a" required><br/>
+                  <button type="button" onclick="signInButton()">Comprobar</button>
+                  <button type="reset" >Limpiar</button>
+
+                  <p>Aun no tienes cuenta ?</p>
+                  <p>
+                      <a href="register.html">Registrar</a>
+                  </p>
+              </form>
+          </section>
+      </article>
+    </main>   
+
+
+<script>
+
+  function signInButton() {
+    
+	var authenticationData = {
+        Username : document.getElementById("inputUsername").value,
+        Password : document.getElementById("inputPassword").value,
+    };
+	
+    var authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails(authenticationData);
+    
+	var poolData = {
+        UserPoolId : _config.cognito.userPoolId, // Your user pool id here
+        ClientId : _config.cognito.clientId, // Your client id here
+    };
+	
+    var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+	
+    var userData = {
+        Username : document.getElementById("inputUsername").value,
+        Pool : userPool,
+    };
+	
+    var cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+    
+	cognitoUser.authenticateUser(authenticationDetails, {
+        onSuccess: function (result) {
+          var accessToken = result.getAccessToken().getJwtToken();
+          //console.log(accessToken);
+          alertify.set('notifier','position', 'bottom-left');
+          alertify.success('El usuario existe');
+          		
+          cognitoUser.signOut();
+      
+        },
+        onFailure: function(err) {
+          //alert(err.message || JSON.stringify(err));
+          if (err.message == 'User is not confirmed.')
+          {
+            alertify.set('notifier','position', 'bottom-left');
+            alertify.error('Usuario no confirmado. Revise su correo.');
+          }
+          else {
+            alertify.set('notifier','position', 'bottom-left');
+            alertify.error('Usuario no existe.');
+          }
+        },
+    });
+  }
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+

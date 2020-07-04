@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>ClassExam-Registro</title>
+    <link rel="stylesheet" type="text/css" href="css/alertify.min.css">
+		<link rel="stylesheet" type="text/css" href="css/alertify.rtl.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Lato&display=swap" rel="stylesheet">
+    <!-- Estilos CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="img/user.png" type="image/x-icon">
+	<!-- Javascript SDK-->
+	<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script> 
+	<script src="js/amazon-cognito-auth.min.js"></script>
+	<script src="https://sdk.amazonaws.com/js/aws-sdk-2.7.16.min.js"></script> 
+	<script src="js/amazon-cognito-identity.min.js"></script>  
+	<script src="js/config.js"></script>	
+    <script src="js/alertify.js"></script>
+  </head>
+
+	
+  <body>
+	<main>
+        <article>
+            <section>
+                <form action="/" method="POST" id="register">				
+					<h1 id="titleheader">Registrate</h1>	                  
+                    <input type="text" name="name" id="personalnameRegister" placeholder="Nombre" pattern=".*" required><br/>
+                    <input type="email" name="email" id="emailInputRegister" placeholder="Correo electr&oacute;nico" pattern=".*" required><br/>
+                    <input type="password" name="password" id="passwordInputRegister" placeholder="Contrase&ntilde;a" pattern=".*" required><br/>
+                    <input type="password" name="password2" id="confirmationpassword" placeholder="Repite la Contrase&ntilde;a" pattern=".*" required><br/>
+                    <button type="button" id="mainbutton" onclick="registerButton()">Registrar</button>
+                    <button type="reset">Limpiar</button>
+
+                    <p>Ya tienes cuenta ?</p>
+                    <p>
+                        <a href="login.html">Inicia Sesion</a>
+                    </p>
+                </form>
+            </section>
+        </article>
+    </main>    
+
+	<script>
+		var username;
+		var password;
+		var personalname;
+		var poolData;
+			
+	  function registerButton() {
+		personalnamename =  document.getElementById("personalnameRegister").value;	
+		username = document.getElementById("emailInputRegister").value;
+		
+		if (document.getElementById("passwordInputRegister").value != document.getElementById("confirmationpassword").value) {
+			alertify.set('notifier','position', 'bottom-left');
+			alertify.error('Contraseñas no coinciden.');
+			throw "Passwords Do Not Match!"
+		} else {
+			password =  document.getElementById("passwordInputRegister").value;	
+		}
+		
+		poolData = {
+				UserPoolId : _config.cognito.userPoolId, // Your user pool id here
+				ClientId : _config.cognito.clientId // Your client id here
+			};		
+		var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+
+		var attributeList = [];
+		
+		var dataEmail = {
+			Name : 'email', 
+			Value : username, //get from form field
+		};
+		
+		var dataPersonalName = {
+			Name : 'name', 
+			Value : personalname, //get from form field
+		};
+
+		var dataProfesor = {
+			Name: 'custom:Profesor',
+			Value: 's'
+		}
+
+		var attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail);
+		var attributePersonalName = new AmazonCognitoIdentity.CognitoUserAttribute(dataPersonalName);
+		var attributeProfesor = new AmazonCognitoIdentity.CognitoUserAttribute(dataProfesor);
+		
+		attributeList.push(attributeEmail);
+		attributeList.push(attributePersonalName);
+		attributeList.push(attributeProfesor);
+
+		userPool.signUp(username, password, attributeList, null, function(err, result){
+			if (err) {
+				//alert(err.message || JSON.stringify(err));
+				alertify.set('notifier','position', 'bottom-left');
+				alertify.error(err.message);
+				return;
+			}
+			cognitoUser = result.user;
+			console.log('user name is ' + cognitoUser.getUsername());
+			//change elements of page
+			//document.getElementById("titleheader").innerHTML = "Check your email for a verification link";
+			alertify.set('notifier','position', 'bottom-left');
+          	alertify.success('Revise su correo electrónico para ver un enlace de verificación');
+			
+		});
+	  }
+
+	</script>
+ 
+ </body>
+  
+</html>
+
+
+
+
+
+
+
+
